@@ -45,3 +45,20 @@ void MainWindow::on_set_listener_clicked()
     server.close();
     server.listen(port);
 }
+
+void MainWindow::on_receive_clicked()
+{
+    QString addr = ui->server_address->toPlainText();
+    bool ok;
+    int port = ui->server_port->toPlainText().toInt(&ok);
+    if (ok) {
+        QString filename;
+        filename = QFileDialog::getSaveFileName(nullptr, tr(u8"Выберите файл для сохранения"),
+                                                QDir::homePath(), tr("All files (*)"));
+        if (filename.isEmpty()) return;
+
+        client.connect(addr, port, filename);
+    } else {
+        displayError(tr(u8"Порт должен быть целым числом"));
+    }
+}

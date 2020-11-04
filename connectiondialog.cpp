@@ -18,7 +18,7 @@ void ConnectionDialog::askUser(QTcpSocket *conn)
 {
     this->conn = conn;
     QString text = tr(u8"Входящее подключение от %1:%2. Принять?").arg(conn->peerName()).arg(conn->peerPort());
-    ui->label->setText(text);
+    ui->connection_text->setText(text);
     show();
 }
 

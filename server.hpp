@@ -13,6 +13,8 @@ public:
     void listen(int port);
     void close();
 
+    static constexpr quint16 blockSize = 256;
+
 signals:
     void error(QString err);
 
@@ -25,6 +27,7 @@ public slots:
 private:
     QTcpServer *tcpServer = nullptr;
     QString filename;
+    quint64 bytesSent = 0;
     ConnectionDialog *dialog = nullptr;
 
 };

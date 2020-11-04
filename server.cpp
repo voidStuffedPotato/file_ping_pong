@@ -16,7 +16,7 @@ void Server::listen(int port)
 {
     tcpServer = new QTcpServer;
 
-    if (!tcpServer->listen(QHostAddress::Any, port)) {
+    if (!tcpServer->listen(QHostAddress::LocalHost, port)) {
         error(u8"Сервер не запускается, всё очень плохо");
         tcpServer->close();
         return;
@@ -28,27 +28,42 @@ void Server::listen(int port)
 
 void Server::serve(QTcpSocket* conn)
 {
-    QFile file(filename);
-
-    if (!file.open(QFile::ReadOnly)) {
-        conn->close();
-        return;
-    }
-
-    QDataStream in(&file);
-    QByteArray block;
-    in.setVersion(QDataStream::Qt_5_10);
-
-    in >> block;
-
     QObject::connect(conn, &QAbstractSocket::disconnected,
                      conn, &QObject::deleteLater);
 
-//    QObject::connect(conn, &QIODevice::bytesWritten,
-//                     conn, &QObject::deleteLater);
+    qint64 bytesRead = 0, bytesSent = 0, fileSize = 0;
+    char* fileContents = new char[256];
+    QFile file(filename);
 
-    conn->write(block);
+    if (!file.open(QFile::ReadOnly)) {
+        conn->disconnectFromHost();
+        return;
+    }
+    fileSize = file.size();
+
+    while (conn->isValid()) {
+        bytesRead = file.read(fileContents, Server::blockSize);
+        qDebug() << tr(u8"<Сервер> прочитал %1 байт").arg(bytesRead);
+        if (bytesRead == 0) break;
+
+        QByteArray block;
+        QDataStream data(&block, QIODevice::WriteOnly);
+
+        data.setVersion(QDataStream::Qt_5_10);
+
+        if (bytesSent == 0)
+            data << fileSize;
+        data << bytesRead;
+        data << QByteArray(fileContents, bytesRead);
+
+        conn->write(block);
+        bytesSent += block.size();
+        qDebug() << tr(u8"<Сервер> Отправлено %1 байт, всего отправлено %2 байт")
+                    .arg(block.size())
+                    .arg(bytesSent);
+    }
     conn->disconnectFromHost();
+    file.close();
 }
 
 void Server::setFilename(QString name)
@@ -58,7 +73,8 @@ void Server::setFilename(QString name)
 
 void Server::close()
 {
-    tcpServer->close();
+    if (tcpServer != nullptr)
+        tcpServer->close();
 }
 
 void Server::newConnection()

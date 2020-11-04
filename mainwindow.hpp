@@ -26,6 +26,8 @@ public slots:
 private slots:
     void on_set_listener_clicked();
 
+    void on_receive_clicked();
+
 private:
     bool setClient(QString address, int port);
 
