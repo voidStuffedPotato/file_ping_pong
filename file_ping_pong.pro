@@ -13,6 +13,7 @@ SOURCES += \
     connectiondialog.cpp \
     main.cpp \
     mainwindow.cpp \
+    progressdialog.cpp \
     server.cpp \
     sqlitelogger.cpp
 
@@ -20,12 +21,14 @@ HEADERS += \
     client.hpp \
     connectiondialog.hpp \
     mainwindow.hpp \
+    progressdialog.h \
     server.hpp \
     sqlitelogger.hpp
 
 FORMS += \
     connectiondialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    progressdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

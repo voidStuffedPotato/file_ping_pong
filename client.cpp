@@ -4,6 +4,7 @@
 Client::Client(QObject *parent)
     : QObject(parent)
     , tcpSocket(new QTcpSocket(this))
+    , progressDialog(new ProgressDialog)
 {
     in.setDevice(tcpSocket);
     in.setVersion(QDataStream::Qt_5_10);
@@ -27,6 +28,7 @@ void Client::connect(QString address, int port, QString filename)
     file.open(QIODevice::WriteOnly);
 
     tcpSocket->connectToHost(address, port);
+    progressDialog->setUp(1);
 }
 
 void Client::close()
@@ -37,6 +39,7 @@ void Client::close()
         qDebug() << tr(u8"<Клиент> Сокет закрыт после чтения %1 байт в %2")
                     .arg(bytesRead)
                     .arg(file.fileName());
+        progressDialog->tearDown();
         file.close();
     }
 }
@@ -48,8 +51,10 @@ void Client::readPacket()
     qint64 packetSize;
     QByteArray buffer;
 
-    if (bytesRead == 0)
+    if (bytesRead == 0) {
         in >> fileSize;
+        progressDialog->setUp(fileSize);
+    }
     in >> packetSize;
     in >> buffer;
 
@@ -59,7 +64,7 @@ void Client::readPacket()
     }
 
     bytesRead += packetSize;
-    // TODO: обновить ProgressBar
+    progressDialog->progress(packetSize);
     qDebug() << tr(u8"<Клиент> Прочитал %1/%2")
                 .arg(bytesRead)
                 .arg(fileSize);

@@ -42,7 +42,7 @@ void MainWindow::on_set_listener_clicked()
     }
 
     server.setFilename(filename);
-    server.close();
+//    server.close();
     server.listen(port);
 }
 

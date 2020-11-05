@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QTcpSocket>
 #include <QDataStream>
-#include <QTemporaryFile>
+#include "progressdialog.h"
 
 class Client : public QObject
 {
@@ -26,6 +26,7 @@ private:
     QFile file;
     QDataStream in;
     QTcpSocket* tcpSocket = nullptr;
+    ProgressDialog *progressDialog = nullptr;
     qint64 fileSize = 0;
     qint64 bytesRead = 0;
 };

@@ -1,4 +1,5 @@
 #include <QFile>
+#include <QThread>
 #include "server.hpp"
 #include "mainwindow.hpp"
 
@@ -57,10 +58,12 @@ void Server::serve(QTcpSocket* conn)
         data << QByteArray(fileContents, bytesRead);
 
         conn->write(block);
+        conn->flush();
         bytesSent += block.size();
         qDebug() << tr(u8"<Сервер> Отправлено %1 байт, всего отправлено %2 байт")
                     .arg(block.size())
                     .arg(bytesSent);
+        QThread::msleep(1);
     }
     conn->disconnectFromHost();
     file.close();
@@ -86,4 +89,5 @@ void Server::newConnection()
 void Server::reject(QTcpSocket* conn)
 {
     conn->close();
+    delete conn;
 }

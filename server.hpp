@@ -13,7 +13,8 @@ public:
     void listen(int port);
     void close();
 
-    static constexpr quint16 blockSize = 256;
+    // 2KB block size
+    static constexpr quint64 blockSize = 2 << 10;
 
 signals:
     void error(QString err);
