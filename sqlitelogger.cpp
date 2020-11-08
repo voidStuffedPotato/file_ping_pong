@@ -7,7 +7,7 @@
 SQLiteLogger::SQLiteLogger(QObject *parent) : QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(QDir::homePath() + "/ping_pong_logger.db");
+    db.setDatabaseName(QDir::homePath() + QDir::separator() + "ping_pong_logger.db");
 
     bool ok = db.open();
     if (!ok) {
