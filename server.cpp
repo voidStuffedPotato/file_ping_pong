@@ -15,6 +15,7 @@ Server::Server(QObject *parent)
 
 void Server::listen(int port)
 {
+    close();
     tcpServer = new QTcpServer;
 
     if (!tcpServer->listen(QHostAddress::LocalHost, port)) {
@@ -33,7 +34,7 @@ void Server::serve(QTcpSocket* conn)
                      conn, &QObject::deleteLater);
 
     qint64 bytesRead = 0, bytesSent = 0, fileSize = 0;
-    char* fileContents = new char[256];
+    char* fileContents = new char[Server::blockSize];
     QFile file(filename);
 
     if (!file.open(QFile::ReadOnly)) {
@@ -44,7 +45,7 @@ void Server::serve(QTcpSocket* conn)
 
     while (conn->isValid()) {
         bytesRead = file.read(fileContents, Server::blockSize);
-        qDebug() << tr(u8"<Сервер> прочитал %1 байт").arg(bytesRead);
+        log(tr(u8"<Сервер> прочитал %1 байт").arg(bytesRead));
         if (bytesRead == 0) break;
 
         QByteArray block;
@@ -60,9 +61,9 @@ void Server::serve(QTcpSocket* conn)
         conn->write(block);
         conn->flush();
         bytesSent += block.size();
-        qDebug() << tr(u8"<Сервер> Отправлено %1 байт, всего отправлено %2 байт")
-                    .arg(block.size())
-                    .arg(bytesSent);
+        log(tr(u8"<Сервер> Отправлено %1 байт, всего отправлено %2 байт")
+            .arg(block.size())
+            .arg(bytesSent));
         QThread::msleep(1);
     }
     conn->disconnectFromHost();
@@ -76,18 +77,22 @@ void Server::setFilename(QString name)
 
 void Server::close()
 {
-    if (tcpServer != nullptr)
+    if (tcpServer != nullptr) {
         tcpServer->close();
+        log(u8"<Сервер> Соединение закрыто");
+    }
 }
 
 void Server::newConnection()
 {
     auto conn = tcpServer->nextPendingConnection();
+    log(u8"<Сервер> Новое соединение");
     dialog->askUser(conn);
 }
 
 void Server::reject(QTcpSocket* conn)
 {
+    log(u8"<Сервер> Соединение разорвано");
     conn->close();
     delete conn;
 }

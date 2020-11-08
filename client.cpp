@@ -36,9 +36,9 @@ void Client::close()
     if (file.isOpen()) {
         while (tcpSocket->bytesAvailable() > 0)
             readPacket();
-        qDebug() << tr(u8"<Клиент> Сокет закрыт после чтения %1 байт в %2")
-                    .arg(bytesRead)
-                    .arg(file.fileName());
+        log(tr(u8"<Клиент> Сокет закрыт после чтения %1 байт в %2")
+            .arg(bytesRead)
+            .arg(file.fileName()));
         progressDialog->tearDown();
         file.close();
     }
@@ -59,24 +59,24 @@ void Client::readPacket()
     in >> buffer;
 
     if (!in.commitTransaction()) {
-        qDebug() << tr(u8"<Клиент> Не дочитал пакет");
+        log(tr(u8"<Клиент> Не дочитал пакет"));
         return;
     }
 
     bytesRead += packetSize;
     progressDialog->progress(packetSize);
-    qDebug() << tr(u8"<Клиент> Прочитал %1/%2")
-                .arg(bytesRead)
-                .arg(fileSize);
+    log(tr(u8"<Клиент> Прочитал %1/%2")
+        .arg(bytesRead)
+        .arg(fileSize));
     writePacket(buffer);
 }
 
 void Client::writePacket(QByteArray &buffer)
 {
     if (!file.isWritable()) {
-        qDebug() << tr(u8"<Клиент> Ошибка: битый файл");
+        log(tr(u8"<Клиент> Ошибка: битый файл"));
         return;
     }
     qint64 bytes = file.write(buffer);
-    qDebug() << tr(u8"<Клиент> Записал %1 байт в файл").arg(bytes);
+    log(tr(u8"<Клиент> Записал %1 байт в файл").arg(bytes));
 }

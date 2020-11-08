@@ -13,11 +13,12 @@ public:
     void listen(int port);
     void close();
 
-    // 2KB block size
-    static constexpr quint64 blockSize = 2 << 10;
+    // 4KB block size
+    static constexpr quint64 blockSize = 100 << 10;
 
 signals:
     void error(QString err);
+    void log(QString msg);
 
 public slots:
     void serve(QTcpSocket* conn);

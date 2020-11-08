@@ -25,8 +25,8 @@ public slots:
 
 private slots:
     void on_set_listener_clicked();
-
     void on_receive_clicked();
+    void log(QString data);
 
 private:
     bool setClient(QString address, int port);
@@ -34,6 +34,6 @@ private:
     Ui::MainWindow *ui;
     Client client;
     Server server;
-    SQLiteLogger logger;
+    SQLiteLogger *logger;
 };
 #endif // MAINWINDOW_HPP

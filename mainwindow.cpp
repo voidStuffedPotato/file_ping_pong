@@ -8,20 +8,27 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , server(this)
+    , logger(new SQLiteLogger)
 {
     ui->setupUi(this);
     QObject::connect(&server, &Server::error,
                      this, &MainWindow::displayError);
+    QObject::connect(&server, &Server::log,
+                     this, &MainWindow::log);
+    QObject::connect(&server, &Server::log,
+                     this, &MainWindow::log);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete logger;
 }
 
 void MainWindow::displayError(QString msg)
 {
     QMessageBox::critical(this, tr(u8"Ошибка"), msg);
+    log(u8"Ошибка: " + msg);
 }
 
 void MainWindow::on_set_listener_clicked()
@@ -30,6 +37,7 @@ void MainWindow::on_set_listener_clicked()
     int port = ui->listener_port->toPlainText().toInt(&ok);
     if (!ok) {
         displayError(tr(u8"Порт должен быть целым числом"));
+        log(u8"<Сервер> Ошибка: порт должен быть целым числом");
         return;
     }
 
@@ -38,6 +46,7 @@ void MainWindow::on_set_listener_clicked()
                                             QDir::homePath(), tr("All files (*)"));
     if (filename.isEmpty()) {
         displayError(tr(u8"Файл не выбран"));
+        log(u8"<Сервер> Ошибка: Файл не выбран");
         return;
     }
 
@@ -57,8 +66,15 @@ void MainWindow::on_receive_clicked()
                                                 QDir::homePath(), tr("All files (*)"));
         if (filename.isEmpty()) return;
 
+        log(tr(u8"<Клиент> Подключаюсь к %1:%2").arg(addr).arg(port));
         client.connect(addr, port, filename);
     } else {
         displayError(tr(u8"Порт должен быть целым числом"));
+        log(u8"<Клиент> Ошибка: порт должен быть целым числом");
     }
+}
+
+void MainWindow::log(QString data)
+{
+    logger->write(data);
 }

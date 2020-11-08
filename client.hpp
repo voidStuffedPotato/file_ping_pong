@@ -14,6 +14,9 @@ public:
     explicit Client(QObject *parent = nullptr);
     void connect(QString address, int port, QString filename);
 
+signals:
+    void log(QString msg);
+
 public slots:
     void close();
 
