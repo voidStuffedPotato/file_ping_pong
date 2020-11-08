@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
                      this, &MainWindow::displayError);
     QObject::connect(&server, &Server::log,
                      this, &MainWindow::log);
-    QObject::connect(&server, &Server::log,
+    QObject::connect(&client, &Client::log,
                      this, &MainWindow::log);
 }
 

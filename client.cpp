@@ -29,6 +29,11 @@ void Client::connect(QString address, int port, QString filename)
 
     tcpSocket->connectToHost(address, port);
     progressDialog->setUp(1);
+
+    log(tr(u8"<Клиент> Принимаю файл %1 от %2:%3")
+        .arg(filename)
+        .arg(address)
+        .arg(port));
 }
 
 void Client::close()
@@ -58,16 +63,11 @@ void Client::readPacket()
     in >> packetSize;
     in >> buffer;
 
-    if (!in.commitTransaction()) {
-        log(tr(u8"<Клиент> Не дочитал пакет"));
-        return;
-    }
+    if (!in.commitTransaction()) return;
 
     bytesRead += packetSize;
     progressDialog->progress(packetSize);
-    log(tr(u8"<Клиент> Прочитал %1/%2")
-        .arg(bytesRead)
-        .arg(fileSize));
+
     writePacket(buffer);
 }
 
@@ -77,6 +77,5 @@ void Client::writePacket(QByteArray &buffer)
         log(tr(u8"<Клиент> Ошибка: битый файл"));
         return;
     }
-    qint64 bytes = file.write(buffer);
-    log(tr(u8"<Клиент> Записал %1 байт в файл").arg(bytes));
+    file.write(buffer);
 }

@@ -37,7 +37,14 @@ void Server::serve(QTcpSocket* conn)
     char* fileContents = new char[Server::blockSize];
     QFile file(filename);
 
+    log(tr(u8"<Сервер> Устанавливаем соединение с %1:%2")
+        .arg(conn->peerAddress().toString())
+        .arg(conn->peerPort()));
+
     if (!file.open(QFile::ReadOnly)) {
+        log(tr(u8"<Сервер> ошибка при чтении файла %1")
+            .arg(filename));
+
         conn->disconnectFromHost();
         return;
     }
@@ -45,12 +52,10 @@ void Server::serve(QTcpSocket* conn)
 
     while (conn->isValid()) {
         bytesRead = file.read(fileContents, Server::blockSize);
-        log(tr(u8"<Сервер> прочитал %1 байт").arg(bytesRead));
         if (bytesRead == 0) break;
 
         QByteArray block;
         QDataStream data(&block, QIODevice::WriteOnly);
-
         data.setVersion(QDataStream::Qt_5_10);
 
         if (bytesSent == 0)
@@ -60,14 +65,14 @@ void Server::serve(QTcpSocket* conn)
 
         conn->write(block);
         conn->flush();
+
         bytesSent += block.size();
-        log(tr(u8"<Сервер> Отправлено %1 байт, всего отправлено %2 байт")
-            .arg(block.size())
-            .arg(bytesSent));
+
         QThread::msleep(1);
     }
     conn->disconnectFromHost();
     file.close();
+    log(u8"<Сервер> Файл отправлен, соединение закрыто");
 }
 
 void Server::setFilename(QString name)

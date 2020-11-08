@@ -13,7 +13,7 @@ public:
     void listen(int port);
     void close();
 
-    // 4KB block size
+    // 100KB block size
     static constexpr quint64 blockSize = 100 << 10;
 
 signals:

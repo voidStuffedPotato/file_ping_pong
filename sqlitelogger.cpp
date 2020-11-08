@@ -1,34 +1,40 @@
-#include "sqlitelogger.hpp"
 #include <QtDebug>
+#include <QDir>
+#include <QDateTime>
+#include <QProcess>
+#include "sqlitelogger.hpp"
 
 SQLiteLogger::SQLiteLogger(QObject *parent) : QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("ping_pong_logger");
+    db.setDatabaseName(QDir::homePath() + "/ping_pong_logger.db");
 
     bool ok = db.open();
-    if (!ok) exit(1);
+    if (!ok) {
+        qDebug() << u8"Ошибка соединения с базой данных";
+    }
 
     QSqlQuery query("CREATE TABLE IF NOT EXISTS Log ( \"text\" TEXT );");
-    if (query.exec())
-        qDebug() << u8"Я здесь";
+    if (!query.exec())
+        qDebug() << u8"Ошибка: запрос на создание таблицы не выполнен";
 }
 
-void SQLiteLogger::write(QString data)
+void SQLiteLogger::write(QString text)
 {
-    db.transaction();
     QSqlQuery query;
+
+    auto now = QDateTime::currentDateTime();
+    text = now.toString("[dd.MM.yyyy hh:mm:ss] ") + text;
+
     query.prepare("INSERT INTO Log VALUES (:text)");
-    query.bindValue(":text", QVariant(data));
-    query.exec();
-    db.commit();
-    QSqlQuery select("SELECT * FROM Log");
-    if (select.size() > 0)
-        qDebug() << tr(u8"Прочитано %1 записей").arg(select.size());
+    query.bindValue(":text", QVariant(text));
+
+    if (!query.exec())
+        qDebug() << u8"Ошибка записи в БД";
 }
 
 SQLiteLogger::~SQLiteLogger()
 {
     db.close();
-    QSqlDatabase::removeDatabase("ping_pong_logger");
+    QSqlDatabase::removeDatabase(db.databaseName());
 }
